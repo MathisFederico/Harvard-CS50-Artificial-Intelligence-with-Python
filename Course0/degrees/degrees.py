@@ -84,16 +84,45 @@ def main():
             print(f"{i + 1}: {person1} and {person2} starred in {movie}")
 
 
-def shortest_path(source, target):
+def add_unseen_neighbors(frontier, seen, parent):
+    """
+    Add the neighbors of the node to the frontier
+    """
+    for neighbor in neighbors_for_person(parent.state):
+        person_id = neighbor[1]
+        movie_id = neighbor[0]
+        if person_id not in seen:
+            node = Node(person_id, parent, movie_id)
+            frontier.add(node)
+
+def shortest_path(source_id, target_id):
     """
     Returns the shortest list of (movie_id, person_id) pairs
     that connect the source to the target.
 
     If no possible path, returns None.
     """
+    if source_id == target_id:
+        return []
 
-    # TODO
-    raise NotImplementedError
+    frontier = QueueFrontier()
+    seen = set([source_id])
+    start_node = Node(source_id, None, None)
+    add_unseen_neighbors(frontier, seen, start_node)
+
+    while not frontier.empty():
+        if frontier.contains_state(target_id):
+            path = []
+            parent = [node for node in frontier.frontier if node.state==target_id][0]
+            while parent.state != source_id:
+                path.append((parent.action, parent.state))
+                parent = parent.parent
+            return path
+        else:
+            node = frontier.remove()
+            seen.add(node.state)
+            add_unseen_neighbors(frontier, seen, node)
+    return None
 
 
 def person_id_for_name(name):
